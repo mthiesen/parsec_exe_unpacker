@@ -1,0 +1,17 @@
+[package]
+name = "parsec_exe_unpacker"
+version = "1.0.0"
+description = "Unpacker for an obscure MS-DOS executable packer using x86 emulation"
+authors = ["Malte Thiesen <malte@kamalook.de>"]
+
+[dependencies]
+byteorder = "1.0"
+clap = "2.29"
+unicorn = { git = "https://github.com/mthiesen/unicorn-rs.git" }
+
+[dependencies.error-chain]
+version = "0.11"
+default-features = false
+
+[dev-dependencies]
+assert_matches = "1.1"

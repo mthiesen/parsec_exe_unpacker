@@ -90,7 +90,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "libunicorn-sys"
 version = "0.7.0"
-source = "git+https://github.com/mthiesen/unicorn-rs.git#21ae0578aa5f8bead8d67cb14930bfef999badb9"
+source = "git+https://github.com/mthiesen/unicorn-rs.git#3891e97c7acce14cac00c5e22483788f22605677"
 dependencies = [
  "bitflags 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "build-helper 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -223,7 +223,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "unicorn"
 version = "0.7.0"
-source = "git+https://github.com/mthiesen/unicorn-rs.git#21ae0578aa5f8bead8d67cb14930bfef999badb9"
+source = "git+https://github.com/mthiesen/unicorn-rs.git#3891e97c7acce14cac00c5e22483788f22605677"
 dependencies = [
  "bitflags 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "gcc 0.3.54 (registry+https://github.com/rust-lang/crates.io-index)",

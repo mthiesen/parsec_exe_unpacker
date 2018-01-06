@@ -7,7 +7,7 @@ authors = ["Malte Thiesen <malte@kamalook.de>"]
 [dependencies]
 byteorder = "1.0"
 clap = "2.29"
-unicorn = { git = "https://github.com/mthiesen/unicorn-rs.git" }
+unicorn = { git = "https://github.com/ekse/unicorn-rs.git" }
 
 [dependencies.error-chain]
 version = "0.11"

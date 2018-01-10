@@ -3,8 +3,8 @@ use byteorder::WriteBytesExt;
 
 use errors::{Result, ResultExt};
 
-use std::io::Write;
 use std::fmt;
+use std::io::Write;
 use std::mem::size_of;
 
 // -------------------------------------------------------------------------------------------------
@@ -21,13 +21,13 @@ pub struct Info {
     pub load_module_len: usize,
     pub total_alloc_len: usize,
     pub initial_stack_ptr: SegmentOffsetPtr,
-    pub entry_point: SegmentOffsetPtr,
+    pub entry_point: SegmentOffsetPtr
 }
 
 #[derive(Debug, PartialEq)]
 pub struct SegmentOffsetPtr {
     pub segment: u16,
-    pub offset: u16,
+    pub offset: u16
 }
 
 impl SegmentOffsetPtr {
@@ -50,12 +50,12 @@ pub fn write_executable<W: Write>(
     mut writer: W,
     initial_stack_ptr: SegmentOffsetPtr,
     relocation_table: &[SegmentOffsetPtr],
-    executable_data: &[u8]) -> Result<()> {
+    executable_data: &[u8]
+) -> Result<()> {
     const BASE_HEADER_PARAGRAPHS: usize = 2;
     let header_paragraphs = {
         let reloc_tab_bytes = relocation_table.len() * size_of::<u16>() * 2;
-        let reloc_tab_paragraphs =
-            (reloc_tab_bytes + PARAGRAPH_SIZE - 1) / PARAGRAPH_SIZE;
+        let reloc_tab_paragraphs = (reloc_tab_bytes + PARAGRAPH_SIZE - 1) / PARAGRAPH_SIZE;
 
         let total_paragraphs = BASE_HEADER_PARAGRAPHS + reloc_tab_paragraphs;
 
@@ -75,7 +75,9 @@ pub fn write_executable<W: Write>(
     let mut header_bytes_written = 0;
     {
         let mut write_u16 = |v: u16| -> Result<()> {
-            writer.write_u16::<LittleEndian>(v).chain_err(|| "Failed to write executable header.")?;
+            writer
+                .write_u16::<LittleEndian>(v)
+                .chain_err(|| "Failed to write executable header.")?;
             header_bytes_written += size_of::<u16>();
             Ok(())
         };
@@ -115,18 +117,22 @@ pub fn write_executable<W: Write>(
     let padding_size = header_paragraphs * PARAGRAPH_SIZE - header_bytes_written;
     if padding_size > 0 {
         let padding = [0u8; PARAGRAPH_SIZE * 2];
-        writer.write_all(&padding[0..padding_size])
+        writer
+            .write_all(&padding[0..padding_size])
             .chain_err(|| "Failed to write executable header.")?;
     }
 
-    writer.write_all(executable_data).chain_err(|| "Failed to write executable data.")?;
+    writer
+        .write_all(executable_data)
+        .chain_err(|| "Failed to write executable data.")?;
 
     let total_bytes_written = header_paragraphs * PARAGRAPH_SIZE + executable_data.len();
     assert!(file_pages * PAGE_SIZE >= total_bytes_written);
     let padding_size = file_pages * PAGE_SIZE - total_bytes_written;
     if padding_size > 0 {
         let padding = [0u8; PAGE_SIZE];
-        writer.write_all(&padding[0..padding_size])
+        writer
+            .write_all(&padding[0..padding_size])
             .chain_err(|| "Failed to write executable data.")?;
     }
 
@@ -145,6 +151,9 @@ mod test {
 
     #[test]
     fn segment_offset_ptr_display() {
-        assert_eq!("1234:5678", format!("{}", SegmentOffsetPtr::new(0x1234, 0x5678)));
+        assert_eq!(
+            "1234:5678",
+            format!("{}", SegmentOffsetPtr::new(0x1234, 0x5678))
+        );
     }
 }

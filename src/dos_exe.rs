@@ -1,11 +1,8 @@
-use byteorder::LittleEndian;
-use byteorder::WriteBytesExt;
+use byteorder::{LittleEndian, WriteBytesExt};
 
 use errors::{Result, ResultExt};
 
-use std::fmt;
-use std::io::Write;
-use std::mem::size_of;
+use std::{fmt, io::Write, mem::size_of};
 
 // -------------------------------------------------------------------------------------------------
 

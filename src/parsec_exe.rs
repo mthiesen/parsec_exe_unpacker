@@ -1,10 +1,8 @@
 use dos_exe::{Info, SegmentOffsetPtr, MZ_HEADER_SIGNATURE, PAGE_SIZE, PARAGRAPH_SIZE};
 
-use errors::Result;
-use errors::ResultExt;
+use errors::{Result, ResultExt};
 
-use byteorder::ByteOrder;
-use byteorder::LittleEndian;
+use byteorder::{ByteOrder, LittleEndian};
 
 use std::io::{ErrorKind, Read};
 

@@ -23,13 +23,13 @@ use clap::{App, Arg};
 
 use dos_exe::SegmentOffsetPtr;
 
-use errors::Result;
-use errors::ResultExt;
+use errors::{Result, ResultExt};
 
-use std::fs::OpenOptions;
-use std::io::BufWriter;
-use std::io::prelude::*;
-use std::path::PathBuf;
+use std::{
+    fs::OpenOptions,
+    io::{prelude::*, BufWriter},
+    path::PathBuf
+};
 
 // -------------------------------------------------------------------------------------------------
 
@@ -143,17 +143,19 @@ fn run() -> Result<()> {
 
     println!("Writing '{}' ...", output_file.to_string_lossy());
 
-    let file = BufWriter::new(OpenOptions::new()
-        .create(true)
-        .truncate(true)
-        .write(true)
-        .open(&output_file)
-        .chain_err(|| {
-            format!(
-                "Failed to open '{}' for writing.",
-                output_file.to_string_lossy()
-            )
-        })?);
+    let file = BufWriter::new(
+        OpenOptions::new()
+            .create(true)
+            .truncate(true)
+            .write(true)
+            .open(&output_file)
+            .chain_err(|| {
+                format!(
+                    "Failed to open '{}' for writing.",
+                    output_file.to_string_lossy()
+                )
+            })?
+    );
 
     dos_exe::write_executable(
         file,

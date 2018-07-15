@@ -2,8 +2,7 @@ use byteorder::{ByteOrder, LittleEndian};
 use dos_exe::{Info, SegmentOffsetPtr, SEGMENT_SIZE};
 use errors::{Error, Result, ResultExt};
 
-use unicorn;
-use unicorn::{Cpu, CpuX86, Mode, RegisterX86};
+use unicorn::{self, Cpu, CpuX86, Mode, RegisterX86};
 
 use std::result::Result as StdResult;
 

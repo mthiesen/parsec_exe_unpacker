@@ -21,7 +21,7 @@ pub struct Info {
     pub entry_point: SegmentOffsetPtr
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct SegmentOffsetPtr {
     pub segment: u16,
     pub offset: u16
@@ -32,7 +32,7 @@ impl SegmentOffsetPtr {
         SegmentOffsetPtr { segment, offset }
     }
 
-    pub fn to_linear(&self) -> usize {
+    pub fn to_linear(self) -> usize {
         self.segment as usize * SEGMENT_SIZE + self.offset as usize
     }
 }

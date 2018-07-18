@@ -167,14 +167,10 @@ fn run() -> Result<()> {
 
 fn main() {
     if let Err(ref e) = run() {
-        use std::io::Write;
-        let stderr = &mut std::io::stderr();
-        let errmsg = "Error writing to stderr";
-
-        writeln!(stderr, "error: {}", e).expect(errmsg);
+        eprintln!("error: {}", e);
 
         for e in e.iter().skip(1) {
-            writeln!(stderr, "caused by: {}", e).expect(errmsg);
+            eprintln!("caused by: {}", e);
         }
 
         std::process::exit(1);

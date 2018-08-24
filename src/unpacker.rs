@@ -1,6 +1,8 @@
 use byteorder::{ByteOrder, LittleEndian};
-use dos_exe::{Info, SegmentOffsetPtr, SEGMENT_SIZE};
-use errors::{Error, Result, ResultExt};
+use crate::{
+    dos_exe::{Info, SegmentOffsetPtr, SEGMENT_SIZE},
+    errors::{Error, Result, ResultExt}
+};
 
 use unicorn::{self, Cpu, CpuX86, Mode, RegisterX86};
 
@@ -35,8 +37,8 @@ pub fn emulate_unpacker(
     base_segment: u16,
     header_info: &Info
 ) -> Result<UnpackedExecutable> {
-    let mut emulator =
-        CpuX86::new(Mode::MODE_16).chain_err_msg("Failed to create 16-bit x86 Unicorn emulator.")?;
+    let mut emulator = CpuX86::new(Mode::MODE_16)
+        .chain_err_msg("Failed to create 16-bit x86 Unicorn emulator.")?;
     emulator
         .mem_map(0, 0xa0000, unicorn::PROT_ALL)
         .chain_err_msg("Failed to map emulator memory.")?;
@@ -70,8 +72,7 @@ pub fn emulate_unpacker(
         .reg_write(
             RegisterX86::SP,
             u64::from(header_info.initial_stack_ptr.offset)
-        )
-        .chain_err_msg("Failed to set emulators SP register.")?;
+        ).chain_err_msg("Failed to set emulators SP register.")?;
 
     emulator
         .reg_write(RegisterX86::ES, u64::from(psp_segment))
@@ -82,7 +83,9 @@ pub fn emulate_unpacker(
 
     emulator
         .emu_start(0, load_location, 0, MAX_NUMBER_OF_INSTRUCTIONS)
-        .chain_err_msg("Code emulation failed. Execution did not reach the original entry point.")?;
+        .chain_err_msg(
+            "Code emulation failed. Execution did not reach the original entry point."
+        )?;
 
     let cs = emulator
         .reg_read(RegisterX86::CS)
@@ -167,8 +170,7 @@ fn build_relocation_table(
         .map(|(index, _)| SegmentOffsetPtr {
             segment: (index / SEGMENT_SIZE) as u16,
             offset: (index % SEGMENT_SIZE) as u16
-        })
-        .collect()
+        }).collect()
 }
 
 fn unrelocate(base_segment: u16, data: &[u8], relocation_table: &[SegmentOffsetPtr]) -> Vec<u8> {

@@ -1,6 +1,6 @@
 use byteorder::{LittleEndian, WriteBytesExt};
 
-use errors::{Result, ResultExt};
+use crate::errors::{Result, ResultExt};
 
 use std::{fmt, io::Write, mem::size_of};
 
@@ -38,7 +38,7 @@ impl SegmentOffsetPtr {
 }
 
 impl fmt::Display for SegmentOffsetPtr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:04x}:{:04x}", self.segment, self.offset)
     }
 }

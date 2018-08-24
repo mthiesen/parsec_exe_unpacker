@@ -1,11 +1,5 @@
-#[cfg(test)]
-#[macro_use]
-extern crate assert_matches;
-extern crate byteorder;
-extern crate clap;
 #[macro_use]
 extern crate error_chain;
-extern crate unicorn;
 
 // -------------------------------------------------------------------------------------------------
 
@@ -21,9 +15,9 @@ mod unpacker;
 
 use clap::{App, Arg};
 
-use dos_exe::SegmentOffsetPtr;
+use crate::dos_exe::SegmentOffsetPtr;
 
-use errors::{Result, ResultExt};
+use crate::errors::{Result, ResultExt};
 
 use std::{
     fs::OpenOptions,
@@ -119,7 +113,11 @@ fn run() -> Result<()> {
             .index(2))
         .get_matches();
 
-    println!(concat!(env!("CARGO_PKG_NAME"), " ", env!("CARGO_PKG_VERSION")));
+    println!(concat!(
+        env!("CARGO_PKG_NAME"),
+        " ",
+        env!("CARGO_PKG_VERSION")
+    ));
     println!(env!("CARGO_PKG_AUTHORS"));
     println!();
 

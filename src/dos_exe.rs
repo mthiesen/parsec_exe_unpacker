@@ -1,7 +1,6 @@
 use byteorder::{LittleEndian, WriteBytesExt};
-
-use crate::errors::{Result, ResultExt};
-
+use crate::Result;
+use failure::ResultExt;
 use std::{fmt, io::Write, mem::size_of};
 
 // -------------------------------------------------------------------------------------------------
@@ -74,7 +73,7 @@ pub fn write_executable<W: Write>(
         let mut write_u16 = |v: u16| -> Result<()> {
             writer
                 .write_u16::<LittleEndian>(v)
-                .chain_err(|| "Failed to write executable header.")?;
+                .context("Failed to write executable header.")?;
             header_bytes_written += size_of::<u16>();
             Ok(())
         };
@@ -116,12 +115,12 @@ pub fn write_executable<W: Write>(
         let padding = [0u8; PARAGRAPH_SIZE * 2];
         writer
             .write_all(&padding[0..padding_size])
-            .chain_err(|| "Failed to write executable header.")?;
+            .context("Failed to write executable header.")?;
     }
 
     writer
         .write_all(executable_data)
-        .chain_err(|| "Failed to write executable data.")?;
+        .context("Failed to write executable data.")?;
 
     let total_bytes_written = header_paragraphs * PARAGRAPH_SIZE + executable_data.len();
     assert!(file_pages * PAGE_SIZE >= total_bytes_written);
@@ -130,7 +129,7 @@ pub fn write_executable<W: Write>(
         let padding = [0u8; PAGE_SIZE];
         writer
             .write_all(&padding[0..padding_size])
-            .chain_err(|| "Failed to write executable data.")?;
+            .context("Failed to write executable data.")?;
     }
 
     Ok(())

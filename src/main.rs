@@ -1,12 +1,3 @@
-#[macro_use]
-extern crate error_chain;
-
-// -------------------------------------------------------------------------------------------------
-
-mod errors {
-    error_chain!{}
-}
-
 mod dos_exe;
 mod parsec_exe;
 mod unpacker;
@@ -14,16 +5,15 @@ mod unpacker;
 // -------------------------------------------------------------------------------------------------
 
 use clap::{App, Arg};
-
 use crate::dos_exe::SegmentOffsetPtr;
-
-use crate::errors::{Result, ResultExt};
-
+use failure::{bail, ResultExt};
 use std::{
     fs::OpenOptions,
     io::{prelude::*, BufWriter},
     path::PathBuf
 };
+
+type Result<T> = failure::Fallible<T>;
 
 // -------------------------------------------------------------------------------------------------
 
@@ -38,14 +28,14 @@ struct UnpackedExe {
 fn unpack_exe<R: Read>(mut reader: R) -> Result<UnpackedExe> {
     println!("Parsing executable header ...");
     let header_info =
-        parsec_exe::parse_header(&mut reader).chain_err(|| "Failed to parse exe header.")?;
+        parsec_exe::parse_header(&mut reader).context("Failed to parse exe header.")?;
 
     println!("Reading executable data ...");
     let executable_data = {
         let mut data = vec![0u8; header_info.load_module_len];
         reader
             .read_exact(&mut data[..])
-            .chain_err(|| "Failed to read exe data.")?;
+            .context("Failed to read exe data.")?;
         data
     };
 
@@ -129,17 +119,12 @@ fn run() -> Result<()> {
     let file = OpenOptions::new()
         .read(true)
         .open(&input_file)
-        .chain_err(|| {
-            format!(
-                "Failed to open '{}' for reading.",
-                input_file.to_string_lossy()
-            )
-        })?;
+        .with_context(|_| format!("Failed to open '{}' for reading.", input_file.display()))?;
 
     let unpacked_exe = unpack_exe(file)
-        .chain_err(|| format!("Failed to unpack '{}'", input_file.to_string_lossy()))?;
+        .with_context(|_| format!("Failed to unpack '{}'", input_file.display()))?;
 
-    println!("Writing '{}' ...", output_file.to_string_lossy());
+    println!("Writing '{}' ...", output_file.display());
 
     let file = BufWriter::new(
         OpenOptions::new()
@@ -147,12 +132,7 @@ fn run() -> Result<()> {
             .truncate(true)
             .write(true)
             .open(&output_file)
-            .chain_err(|| {
-                format!(
-                    "Failed to open '{}' for writing.",
-                    output_file.to_string_lossy()
-                )
-            })?
+            .with_context(|_| format!("Failed to open '{}' for writing.", output_file.display()))?
     );
 
     dos_exe::write_executable(
@@ -160,17 +140,14 @@ fn run() -> Result<()> {
         unpacked_exe.initial_stack_ptr,
         &unpacked_exe.relocation_table,
         &unpacked_exe.executable_data
-    ).chain_err(|| "Failed to write unpacked executable.")
+    ).context("Failed to write unpacked executable.")?;
+
+    Ok(())
 }
 
 fn main() {
-    if let Err(ref e) = run() {
-        eprintln!("error: {}", e);
-
-        for e in e.iter().skip(1) {
-            eprintln!("caused by: {}", e);
-        }
-
+    if let Err(e) = run() {
+        failure_tools::print_causes(e, std::io::stderr());
         std::process::exit(1);
     }
 }

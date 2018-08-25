@@ -1,12 +1,11 @@
 use byteorder::{ByteOrder, LittleEndian};
 use crate::{
     dos_exe::{Info, SegmentOffsetPtr, SEGMENT_SIZE},
-    errors::{Error, Result, ResultExt}
+    Result
 };
-
-use unicorn::{self, Cpu, CpuX86, Mode, RegisterX86};
-
+use failure::{bail, ResultExt};
 use std::result::Result as StdResult;
+use unicorn::{self, Cpu, CpuX86, Mode, RegisterX86};
 
 // -------------------------------------------------------------------------------------------------
 
@@ -21,7 +20,7 @@ trait UnicornResultExt<T> {
 impl<T> UnicornResultExt<T> for StdResult<T, unicorn::Error> {
     fn chain_err_msg(self, msg: &str) -> Result<T> {
         match self {
-            Err(err) => Err(Error::from_kind(err.msg().into())).chain_err(|| msg),
+            Err(err) => Err(failure::err_msg(err.msg())).context(msg.to_owned())?,
             Ok(ok) => Ok(ok)
         }
     }

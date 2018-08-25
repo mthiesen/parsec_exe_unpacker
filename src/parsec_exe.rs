@@ -1,12 +1,9 @@
-use crate::dos_exe::{Info, SegmentOffsetPtr, MZ_HEADER_SIGNATURE, PAGE_SIZE, PARAGRAPH_SIZE};
-
-use crate::errors::{Result, ResultExt};
-
-#[cfg(test)]
-use assert_matches::assert_matches;
-
 use byteorder::{ByteOrder, LittleEndian};
-
+use crate::{
+    dos_exe::{Info, SegmentOffsetPtr, MZ_HEADER_SIGNATURE, PAGE_SIZE, PARAGRAPH_SIZE},
+    Result
+};
+use failure::{bail, ResultExt};
 use std::io::{ErrorKind, Read};
 
 // -------------------------------------------------------------------------------------------------
@@ -21,7 +18,7 @@ pub fn parse_header<R: Read>(mut reader: R) -> Result<Info> {
         let mut buffer = [0u8; SIZE];
         reader
             .read_exact(&mut buffer)
-            .chain_err(|| "Unable to read exe header.")?;
+            .context("Unable to read exe header.")?;
         buffer
     };
 
@@ -108,6 +105,7 @@ pub fn verify_footer<R: Read>(mut reader: R) -> Result<bool> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use assert_matches::assert_matches;
 
     #[test]
     fn parse_correctly() {

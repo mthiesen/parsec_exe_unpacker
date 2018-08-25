@@ -119,7 +119,11 @@ fn run() -> Result<()> {
             .index(2))
         .get_matches();
 
-    println!(concat!(env!("CARGO_PKG_NAME"), " ", env!("CARGO_PKG_VERSION")));
+    println!(concat!(
+        env!("CARGO_PKG_NAME"),
+        " ",
+        env!("CARGO_PKG_VERSION")
+    ));
     println!(env!("CARGO_PKG_AUTHORS"));
     println!();
 

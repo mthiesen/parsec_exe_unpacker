@@ -203,7 +203,7 @@ mod test {
                               This is the end of the file!\x0d\x0a\
                               Das ist das Ende der Datei!\x0d\x0a";
         let result = verify_footer(FOOTER.as_bytes());
-        assert_matches!(Ok(false) as Result<bool>, result);
+        assert_matches!(result, Ok(false));
     }
 
     #[test]
@@ -214,7 +214,7 @@ mod test {
                               Das ist das Ende der Datei!\x0d\x0a\
                               C'est le fin du fichxxx!\x0d\x0a\x00";
         let result = verify_footer(FOOTER.as_bytes());
-        assert_matches!(Ok(false) as Result<bool>, result);
+        assert_matches!(result, Ok(false));
     }
 
     #[test]
@@ -225,6 +225,6 @@ mod test {
                               Das ist das Ende der Datei!\x0d\x0a\
                               C'est le fin du fichier!\x0d\x0a\x00";
         let result = verify_footer(FOOTER.as_bytes());
-        assert_matches!(Ok(true) as Result<bool>, result);
+        assert_matches!(result, Ok(true));
     }
 }

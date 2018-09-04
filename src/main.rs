@@ -5,15 +5,14 @@ mod unpacker;
 // -------------------------------------------------------------------------------------------------
 
 use clap::{App, Arg};
+use common_failures::{prelude::*, quick_main};
 use crate::dos_exe::SegmentOffsetPtr;
-use failure::{bail, ResultExt};
+use failure::bail;
 use std::{
     fs::OpenOptions,
     io::{prelude::*, BufWriter},
     path::PathBuf
 };
-
-type Result<T> = failure::Fallible<T>;
 
 // -------------------------------------------------------------------------------------------------
 
@@ -145,12 +144,7 @@ fn run() -> Result<()> {
     Ok(())
 }
 
-fn main() {
-    if let Err(e) = run() {
-        failure_tools::print_causes(e, std::io::stderr());
-        std::process::exit(1);
-    }
-}
+quick_main!(run);
 
 #[cfg(test)]
 mod test {

@@ -10,8 +10,8 @@ authors = ["Malte Thiesen <malte@kamalook.de>"]
 [dependencies]
 byteorder = "1.2.6"
 clap = "2.32.0"
+common_failures = "0.1.1"
 failure = "0.1.2"
-failure-tools = "4.0.2"
 unicorn = "0.8.0"
 
 [dev-dependencies]

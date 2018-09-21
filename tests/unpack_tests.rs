@@ -1,10 +1,9 @@
 use parsec_exe_unpacker::{unpack_exe, Options};
 
 use common_failures::prelude::*;
-use sha2::Digest;
+use sha2::{Digest, Sha256};
 use std::{
     fs,
-    io::Read,
     path::{Path, PathBuf}
 };
 use tempfile::tempdir;
@@ -43,25 +42,8 @@ fn to_hex_string(bytes: impl Iterator<Item = u8>) -> String {
 // -------------------------------------------------------------------------------------------------
 
 fn hash_file(path: impl AsRef<Path>) -> Result<String> {
-    let mut file = fs::File::open(path)?;
-
-    let mut hasher = sha2::Sha256::default();
-
-    let mut buffer = [0u8; 1024 * 10];
-    loop {
-        match file.read(&mut buffer) {
-            Ok(n) => if n == 0 {
-                break;
-            } else {
-                hasher.input(&buffer[..n]);
-            },
-            Err(e) => if e.kind() != std::io::ErrorKind::Interrupted {
-                Err(e)?;
-            }
-        }
-    }
-
-    Ok(to_hex_string(hasher.result().into_iter()))
+    let digest = Sha256::digest_reader(&mut fs::File::open(path)?)?;
+    Ok(to_hex_string(digest.into_iter()))
 }
 
 // -------------------------------------------------------------------------------------------------

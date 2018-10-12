@@ -42,8 +42,9 @@ fn to_hex_string(bytes: impl Iterator<Item = u8>) -> String {
 // -------------------------------------------------------------------------------------------------
 
 fn hash_file(path: impl AsRef<Path>) -> Result<String> {
-    let digest = Sha256::digest_reader(&mut fs::File::open(path)?)?;
-    Ok(to_hex_string(digest.into_iter()))
+    let mut digest = Sha256::new();
+    std::io::copy(&mut fs::File::open(path)?, &mut digest)?;
+    Ok(to_hex_string(digest.result().into_iter()))
 }
 
 // -------------------------------------------------------------------------------------------------

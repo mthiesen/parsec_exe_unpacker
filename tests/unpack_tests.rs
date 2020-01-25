@@ -34,7 +34,7 @@ fn to_hex_string(bytes: impl Iterator<Item = u8>) -> String {
     let mut hex_string = String::with_capacity(bytes.size_hint().0 * 2);
     for byte in bytes {
         use std::fmt::Write;
-        write!(hex_string, "{:02X}", byte);
+        write!(hex_string, "{:02X}", byte).expect("writing to a string should not fail");
     }
     hex_string
 }

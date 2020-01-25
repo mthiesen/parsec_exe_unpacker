@@ -1,8 +1,8 @@
-use byteorder::{ByteOrder, LittleEndian};
 use crate::{
     dos_exe::{Info, SegmentOffsetPtr, MZ_HEADER_SIGNATURE, PAGE_SIZE, PARAGRAPH_SIZE},
-    Result
+    Result,
 };
+use byteorder::{ByteOrder, LittleEndian};
 use failure::{bail, ResultExt};
 use std::io::{ErrorKind, Read};
 
@@ -43,7 +43,7 @@ pub fn parse_header<R: Read>(mut reader: R) -> Result<Info> {
 
     let initial_stack_ptr = SegmentOffsetPtr::new(
         LittleEndian::read_u16(&header_data[0x0e..]),
-        LittleEndian::read_u16(&header_data[0x10..])
+        LittleEndian::read_u16(&header_data[0x10..]),
     );
     // It is ok for the stack ptr to point as the first byte after the allocated memory because
     // PUSH decrements first and writes second. Therefore the ">" test instead of ">=".
@@ -53,7 +53,7 @@ pub fn parse_header<R: Read>(mut reader: R) -> Result<Info> {
 
     let entry_point = SegmentOffsetPtr::new(
         LittleEndian::read_u16(&header_data[0x16..]),
-        LittleEndian::read_u16(&header_data[0x14..])
+        LittleEndian::read_u16(&header_data[0x14..]),
     );
     if entry_point.to_linear() >= load_module_len {
         bail!("Data is not a valid exe header.");
@@ -78,7 +78,7 @@ pub fn parse_header<R: Read>(mut reader: R) -> Result<Info> {
         load_module_len,
         total_alloc_len,
         initial_stack_ptr,
-        entry_point
+        entry_point,
     })
 }
 

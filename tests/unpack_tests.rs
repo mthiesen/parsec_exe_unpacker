@@ -4,7 +4,7 @@ use common_failures::prelude::*;
 use sha2::{Digest, Sha256};
 use std::{
     fs,
-    path::{Path, PathBuf}
+    path::{Path, PathBuf},
 };
 use tempfile::tempdir;
 
@@ -19,7 +19,7 @@ fn autogen_output_filename() {
 
     let options = Options {
         input_file,
-        output_file: None
+        output_file: None,
     };
 
     unpack_exe(&options).unwrap();
@@ -55,7 +55,7 @@ fn test_unpack(path: impl Into<PathBuf>, expected_hash: &str) {
 
     let options = Options {
         input_file: path.into(),
-        output_file: Some(output_file.clone())
+        output_file: Some(output_file.clone()),
     };
 
     unpack_exe(&options).unwrap();

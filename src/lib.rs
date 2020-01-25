@@ -11,7 +11,7 @@ use failure::bail;
 use std::{
     fs::OpenOptions,
     io::{BufWriter, Read},
-    path::PathBuf
+    path::PathBuf,
 };
 
 // -------------------------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ use std::{
 struct UnpackedExe {
     initial_stack_ptr: SegmentOffsetPtr,
     relocation_table: Vec<SegmentOffsetPtr>,
-    executable_data: Vec<u8>
+    executable_data: Vec<u8>,
 }
 
 fn unpack_exe_internal(mut reader: impl Read) -> Result<UnpackedExe> {
@@ -62,13 +62,13 @@ fn unpack_exe_internal(mut reader: impl Read) -> Result<UnpackedExe> {
         BASE_SEGMENT0,
         &unpacked0.data,
         BASE_SEGMENT1,
-        &unpacked1.data
+        &unpacked1.data,
     )?;
 
     Ok(UnpackedExe {
         initial_stack_ptr: unpacked0.initial_stack_ptr,
         relocation_table: relocation_data.relocation_table,
-        executable_data: relocation_data.restored_executable_data
+        executable_data: relocation_data.restored_executable_data,
     })
 }
 
@@ -95,7 +95,7 @@ mod test_build_file_names {
     fn both_file_names_provided() {
         let (input_file, output_file) = build_file_names(&Options {
             input_file: r"..\dir\input_file.exe".into(),
-            output_file: Some(r"C:\dir\output_file.exe".into())
+            output_file: Some(r"C:\dir\output_file.exe".into()),
         });
         assert_eq!(PathBuf::from(r"..\dir\input_file.exe"), input_file);
         assert_eq!(PathBuf::from(r"C:\dir\output_file.exe"), output_file);
@@ -105,7 +105,7 @@ mod test_build_file_names {
     fn output_file_name_created() {
         let (input_file, output_file) = build_file_names(&Options {
             input_file: r"..\dir\input_file.exe".into(),
-            output_file: None
+            output_file: None,
         });
         assert_eq!(PathBuf::from(r"..\dir\input_file.exe"), input_file);
         assert_eq!(
@@ -119,7 +119,7 @@ mod test_build_file_names {
 
 pub struct Options {
     pub input_file: PathBuf,
-    pub output_file: Option<PathBuf>
+    pub output_file: Option<PathBuf>,
 }
 
 pub fn unpack_exe(options: &Options) -> Result<()> {
@@ -149,15 +149,16 @@ pub fn unpack_exe(options: &Options) -> Result<()> {
             .truncate(true)
             .write(true)
             .open(&output_file)
-            .with_context(|_| format!("Failed to open '{}' for writing.", output_file.display()))?
+            .with_context(|_| format!("Failed to open '{}' for writing.", output_file.display()))?,
     );
 
     dos_exe::write_executable(
         file,
         unpacked_exe.initial_stack_ptr,
         &unpacked_exe.relocation_table,
-        &unpacked_exe.executable_data
-    ).context("Failed to write unpacked executable.")?;
+        &unpacked_exe.executable_data,
+    )
+    .context("Failed to write unpacked executable.")?;
 
     Ok(())
 }

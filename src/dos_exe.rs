@@ -1,5 +1,5 @@
-use byteorder::{LittleEndian, WriteBytesExt};
 use crate::Result;
+use byteorder::{LittleEndian, WriteBytesExt};
 use failure::ResultExt;
 use std::{fmt, io::Write, mem::size_of};
 
@@ -17,13 +17,13 @@ pub struct Info {
     pub load_module_len: usize,
     pub total_alloc_len: usize,
     pub initial_stack_ptr: SegmentOffsetPtr,
-    pub entry_point: SegmentOffsetPtr
+    pub entry_point: SegmentOffsetPtr,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct SegmentOffsetPtr {
     pub segment: u16,
-    pub offset: u16
+    pub offset: u16,
 }
 
 impl SegmentOffsetPtr {
@@ -46,7 +46,7 @@ pub fn write_executable<W: Write>(
     mut writer: W,
     initial_stack_ptr: SegmentOffsetPtr,
     relocation_table: &[SegmentOffsetPtr],
-    executable_data: &[u8]
+    executable_data: &[u8],
 ) -> Result<()> {
     const BASE_HEADER_PARAGRAPHS: usize = 2;
     let header_paragraphs = {

@@ -1,8 +1,8 @@
-use byteorder::{ByteOrder, LittleEndian};
 use crate::{
     dos_exe::{Info, SegmentOffsetPtr, SEGMENT_SIZE},
-    Result
+    Result,
 };
+use byteorder::{ByteOrder, LittleEndian};
 use failure::{bail, ResultExt};
 use std::result::Result as StdResult;
 use unicorn::{self, Cpu, CpuX86, Mode, RegisterX86};
@@ -21,20 +21,20 @@ impl<T> UnicornResultExt<T> for StdResult<T, unicorn::Error> {
     fn chain_err_msg(self, msg: &str) -> Result<T> {
         match self {
             Err(err) => Err(failure::err_msg(err.msg())).context(msg.to_owned())?,
-            Ok(ok) => Ok(ok)
+            Ok(ok) => Ok(ok),
         }
     }
 }
 
 pub struct UnpackedExecutable {
     pub data: Vec<u8>,
-    pub initial_stack_ptr: SegmentOffsetPtr
+    pub initial_stack_ptr: SegmentOffsetPtr,
 }
 
 pub fn emulate_unpacker(
     executable_data: &[u8],
     base_segment: u16,
-    header_info: &Info
+    header_info: &Info,
 ) -> Result<UnpackedExecutable> {
     let mut emulator = CpuX86::new(Mode::MODE_16)
         .chain_err_msg("Failed to create 16-bit x86 Unicorn emulator.")?;
@@ -70,8 +70,9 @@ pub fn emulate_unpacker(
     emulator
         .reg_write(
             RegisterX86::SP,
-            u64::from(header_info.initial_stack_ptr.offset)
-        ).chain_err_msg("Failed to set emulators SP register.")?;
+            u64::from(header_info.initial_stack_ptr.offset),
+        )
+        .chain_err_msg("Failed to set emulators SP register.")?;
 
     emulator
         .reg_write(RegisterX86::ES, u64::from(psp_segment))
@@ -83,7 +84,7 @@ pub fn emulate_unpacker(
     emulator
         .emu_start(0, load_location, 0, MAX_NUMBER_OF_INSTRUCTIONS)
         .chain_err_msg(
-            "Code emulation failed. Execution did not reach the original entry point."
+            "Code emulation failed. Execution did not reach the original entry point.",
         )?;
 
     let cs = emulator
@@ -117,21 +118,21 @@ pub fn emulate_unpacker(
         data: unpacked_data,
         initial_stack_ptr: SegmentOffsetPtr {
             segment: ss,
-            offset: sp
-        }
+            offset: sp,
+        },
     })
 }
 
 pub struct RelocationData {
     pub restored_executable_data: Vec<u8>,
-    pub relocation_table: Vec<SegmentOffsetPtr>
+    pub relocation_table: Vec<SegmentOffsetPtr>,
 }
 
 pub fn extract_relocation_table(
     base_segment0: u16,
     unpacked_data0: &[u8],
     base_segment1: u16,
-    unpacked_data1: &[u8]
+    unpacked_data1: &[u8],
 ) -> Result<RelocationData> {
     let relocation_table =
         build_relocation_table(base_segment0, unpacked_data0, base_segment1, unpacked_data1);
@@ -145,7 +146,7 @@ pub fn extract_relocation_table(
 
     Ok(RelocationData {
         restored_executable_data: unrelocated_data0,
-        relocation_table
+        relocation_table,
     })
 }
 
@@ -153,7 +154,7 @@ fn build_relocation_table(
     base_segment0: u16,
     unpacked_data0: &[u8],
     base_segment1: u16,
-    unpacked_data1: &[u8]
+    unpacked_data1: &[u8],
 ) -> Vec<SegmentOffsetPtr> {
     assert!(base_segment0 < base_segment1);
     assert!(unpacked_data0.len() == unpacked_data1.len());
@@ -168,8 +169,9 @@ fn build_relocation_table(
         .filter(|&(_, diff)| diff == base_segment_diff)
         .map(|(index, _)| SegmentOffsetPtr {
             segment: (index / SEGMENT_SIZE) as u16,
-            offset: (index % SEGMENT_SIZE) as u16
-        }).collect()
+            offset: (index % SEGMENT_SIZE) as u16,
+        })
+        .collect()
 }
 
 fn unrelocate(base_segment: u16, data: &[u8], relocation_table: &[SegmentOffsetPtr]) -> Vec<u8> {

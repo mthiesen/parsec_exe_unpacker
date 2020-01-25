@@ -19,7 +19,7 @@ fn get_options() -> Options {
 
     Options {
         input_file: matches.value_of("INPUT_FILE").unwrap().into(),
-        output_file: matches.value_of("OUTPUT_FILE").map(|s| s.into())
+        output_file: matches.value_of("OUTPUT_FILE").map(|s| s.into()),
     }
 }
 

@@ -16,4 +16,4 @@ unicorn = "0.8.0"
 assert_matches = "1.3.0"
 tempfile = "3.0.4"
 sha2 = "0.8.1"
-digest = { version = "0.8.0", features = ["std"] }
+digest = { version = "0.8.1", features = ["std"] }

@@ -81,7 +81,7 @@ pub fn write_executable<W: Write>(
         write_u16(MZ_HEADER_SIGNATURE)?;
 
         write_u16(0)?;
-        write_u16((file_pages + 1) as u16)?;
+        write_u16(file_pages as u16)?;
 
         write_u16(relocation_table.len() as u16)?;
 
@@ -151,5 +151,33 @@ mod test {
             "1234:5678",
             format!("{}", SegmentOffsetPtr::new(0x1234, 0x5678))
         );
+    }
+
+    fn write_dummy_executable(executable_data_len: usize) -> Vec<u8> {
+        let mut written_data = Vec::new();
+        let executable_data = vec![0u8; executable_data_len];
+        write_executable(
+            &mut written_data,
+            SegmentOffsetPtr::new(0, 0),
+            &[],
+            &executable_data,
+        )
+        .unwrap();
+        written_data
+    }
+
+    #[test]
+    fn correct_number_of_pages_written_to_header() {
+        use byteorder::{ByteOrder, LittleEndian};
+
+        let executable = write_dummy_executable(79_159);
+        assert_eq!(executable.len() / PAGE_SIZE, LittleEndian::read_u16(&executable[0x04..]) as usize);
+    }
+
+    #[test]
+    fn executable_padded_to_whole_pages() {
+        let len = write_dummy_executable(79_159).len();
+        assert!(len > 79_159);
+        assert!(len % PAGE_SIZE == 0);
     }
 }

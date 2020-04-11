@@ -28,12 +28,17 @@ pub fn parse_header<R: Read>(mut reader: R) -> Result<Info> {
 
     let load_module_len = {
         let file_page_count = LittleEndian::read_u16(&header_data[0x04..]) as usize;
-        if file_page_count == 0 {
+        let last_page_len = LittleEndian::read_u16(&header_data[0x02..]) as usize;
+
+        if file_page_count == 0 || last_page_len >= PAGE_SIZE {
             bail!("Data is not a valid exe header.");
         }
 
-        let last_page_len = LittleEndian::read_u16(&header_data[0x02..]) as usize;
-        (file_page_count - 1) * PAGE_SIZE + last_page_len - SIZE
+        if last_page_len > 0 {
+            (file_page_count - 1) * PAGE_SIZE + last_page_len - SIZE
+        } else {
+            file_page_count * PAGE_SIZE
+        }
     };
 
     let total_alloc_len = {
@@ -119,6 +124,37 @@ mod test {
         assert_eq!(156906, info.total_alloc_len);
         assert_eq!(SegmentOffsetPtr::new(4939, 256), info.initial_stack_ptr);
         assert_eq!(SegmentOffsetPtr::new(4905, 464), info.entry_point);
+    }
+    #[test]
+    fn module_len_when_last_page_len_is_0() {
+        const HEADER: [u8; SIZE] = [
+            0x4d, 0x5a, 0x00, 0x00, 0x9b, 0x00, 0x00, 0x00, 0x02, 0x00, 0x04, 0x13, 0xff, 0xff,
+            0x4b, 0x13, 0x00, 0x01, 0x00, 0x00, 0xd0, 0x01, 0x29, 0x13, 0x1c, 0x00, 0x00, 0x00,
+            0x50, 0x52, 0x53, 0x43,
+        ];
+        let info = parse_header(&HEADER[..]).unwrap();
+        // It is a special case if the last page length is 0. In that case the last page length is interpreted as 512 not 0.
+        assert_eq!(0x9b * PAGE_SIZE, info.load_module_len);
+    }
+
+    #[test]
+    fn invalid_last_page_len() {
+        {
+            const HEADER: [u8; SIZE] = [
+                0x4d, 0x5a, 0xff, 0xff, 0x9b, 0x00, 0x00, 0x00, 0x02, 0x00, 0x04, 0x13, 0xff, 0xff,
+                0x4b, 0x13, 0x00, 0x01, 0x00, 0x00, 0xd0, 0x01, 0x29, 0x13, 0x1c, 0x00, 0x00, 0x00,
+                0x50, 0x52, 0x53, 0x43,
+            ];
+            assert!(parse_header(&HEADER[..]).is_err());
+        }
+        {
+            const HEADER: [u8; SIZE] = [
+                0x4d, 0x5a, 0x00, 0x02, 0x9b, 0x00, 0x00, 0x00, 0x02, 0x00, 0x04, 0x13, 0xff, 0xff,
+                0x4b, 0x13, 0x00, 0x01, 0x00, 0x00, 0xd0, 0x01, 0x29, 0x13, 0x1c, 0x00, 0x00, 0x00,
+                0x50, 0x52, 0x53, 0x43,
+            ];
+            assert!(parse_header(&HEADER[..]).is_err());
+        }
     }
 
     #[test]

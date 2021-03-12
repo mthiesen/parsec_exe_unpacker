@@ -1,11 +1,11 @@
 [target.x86_64-pc-windows-msvc]
 rustflags = [
     "-C", "target-feature=+crt-static",
-    "-C", "link-arg=/PDB:none",
+    "-C", "link-arg=/DEBUG:NONE",
 ]
 
 [target.i686-pc-windows-msvc]
 rustflags = [
     "-C", "target-feature=+crt-static",
-    "-C", "link-arg=/PDB:none",
+    "-C", "link-arg=/DEBUG:NONE",
 ]

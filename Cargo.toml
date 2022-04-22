@@ -7,7 +7,7 @@ authors = ["Malte Thiesen <malte@kamalook.de>"]
 
 [dependencies]
 byteorder = "1.4.3"
-clap = "2.34.0"
+clap = "3.1.11"
 common_failures = "0.1.1"
 failure = "0.1.8"
 unicorn = "0.9.1"

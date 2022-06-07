@@ -5,7 +5,10 @@ use crate::{
 use byteorder::{ByteOrder, LittleEndian};
 use failure::{bail, ResultExt};
 use std::result::Result as StdResult;
-use unicorn::{self, Cpu, CpuX86, Mode, RegisterX86};
+use unicorn_engine::{
+    unicorn_const::{uc_error, Arch, Mode, Permission},
+    RegisterX86, Unicorn,
+};
 
 // -------------------------------------------------------------------------------------------------
 
@@ -17,10 +20,39 @@ trait UnicornResultExt<T> {
     fn chain_err_msg(self, msg: &str) -> Result<T>;
 }
 
-impl<T> UnicornResultExt<T> for StdResult<T, unicorn::Error> {
+fn unicorn_error_msg(err: uc_error) -> String {
+    let err_str = match err {
+        uc_error::OK => "OK",
+        uc_error::NOMEM => "NOMEM",
+        uc_error::ARCH => "ARCH",
+        uc_error::HANDLE => "HANDLE",
+        uc_error::MODE => "MODE",
+        uc_error::VERSION => "VERSION",
+        uc_error::READ_UNMAPPED => "READ_UNMAPPED",
+        uc_error::WRITE_UNMAPPED => "WRITE__UNMAPPED",
+        uc_error::FETCH_UNMAPPED => "FETCH_UNMAPPED",
+        uc_error::HOOK => "HOOK",
+        uc_error::INSN_INVALID => "INSN_INVALID",
+        uc_error::MAP => "MAP",
+        uc_error::WRITE_PROT => "WRITE_PROT",
+        uc_error::READ_PROT => "READ_PROT",
+        uc_error::FETCH_PROT => "FETCH_PROT",
+        uc_error::ARG => "ARG",
+        uc_error::READ_UNALIGNED => "READ_UNALIGNED",
+        uc_error::WRITE_UNALIGNED => "WRITE_UNALIGNED",
+        uc_error::FETCH_UNALIGNED => "FETCH_UNALIGNED",
+        uc_error::HOOK_EXIST => "HOOK_EXIST",
+        uc_error::RESOURCE => "RESOURCE",
+        uc_error::EXCEPTION => "EXCEPTION",
+    };
+
+    format!("Unicorn error code {err_str}")
+}
+
+impl<T> UnicornResultExt<T> for StdResult<T, uc_error> {
     fn chain_err_msg(self, msg: &str) -> Result<T> {
         match self {
-            Err(err) => Err(failure::err_msg(err.msg())).context(msg.to_owned())?,
+            Err(err) => Err(failure::err_msg(unicorn_error_msg(err))).context(msg.to_owned())?,
             Ok(ok) => Ok(ok),
         }
     }
@@ -36,10 +68,10 @@ pub fn emulate_unpacker(
     base_segment: u16,
     header_info: &Info,
 ) -> Result<UnpackedExecutable> {
-    let emulator = CpuX86::new(Mode::MODE_16)
+    let mut emulator = Unicorn::new(Arch::X86, Mode::MODE_16)
         .chain_err_msg("Failed to create 16-bit x86 Unicorn emulator.")?;
     emulator
-        .mem_map(0, 0xa0000, unicorn::Protection::ALL)
+        .mem_map(0, 0xa0000, Permission::ALL)
         .chain_err_msg("Failed to map emulator memory.")?;
 
     assert!(base_segment >= 0x10);
@@ -100,15 +132,23 @@ pub fn emulate_unpacker(
     let ss = {
         let ss = emulator
             .reg_read(RegisterX86::SS)
-            .chain_err_msg("Failed to read emulators SS register.")? as u16;
-        if ss < base_segment {
+            .chain_err_msg("Failed to read emulators SS register.")?;
+        if ss < u64::from(base_segment) {
             bail!("Invalid stack segment after code emulation.");
         }
-        ss - base_segment
+        ss - u64::from(base_segment)
     };
+    if ss > u64::from(std::u16::MAX) {
+        bail!("Value in SS register after code emulation is too big.");
+    }
+
     let sp = emulator
         .reg_read(RegisterX86::SP)
-        .chain_err_msg("Failed to read emulators SP register.")? as u16;
+        .chain_err_msg("Failed to read emulators SP register.")?;
+
+    if sp > u64::from(std::u16::MAX) {
+        bail!("Value in SP register after code emulation is too big.");
+    }
 
     let mut unpacked_data = vec![0u8; header_info.total_alloc_len];
     emulator
@@ -118,8 +158,8 @@ pub fn emulate_unpacker(
     Ok(UnpackedExecutable {
         data: unpacked_data,
         initial_stack_ptr: SegmentOffsetPtr {
-            segment: ss,
-            offset: sp,
+            segment: ss as u16,
+            offset: sp as u16,
         },
     })
 }

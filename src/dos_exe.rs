@@ -171,7 +171,10 @@ mod test {
         use byteorder::{ByteOrder, LittleEndian};
 
         let executable = write_dummy_executable(79_159);
-        assert_eq!(executable.len() / PAGE_SIZE, LittleEndian::read_u16(&executable[0x04..]) as usize);
+        assert_eq!(
+            executable.len() / PAGE_SIZE,
+            LittleEndian::read_u16(&executable[0x04..]) as usize
+        );
     }
 
     #[test]

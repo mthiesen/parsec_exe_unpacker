@@ -1,9 +1,9 @@
-use crate::{
-    dos_exe::{Info, SegmentOffsetPtr, SEGMENT_SIZE},
-    Result,
-};
+use crate::dos_exe::{Info, SegmentOffsetPtr, SEGMENT_SIZE};
 use byteorder::{ByteOrder, LittleEndian};
-use failure::{bail, ResultExt};
+use eyre::bail;
+use eyre::eyre;
+use eyre::Result;
+use eyre::WrapErr;
 use std::result::Result as StdResult;
 use unicorn_engine::{
     unicorn_const::{uc_error, Arch, Mode, Permission},
@@ -52,7 +52,7 @@ fn unicorn_error_msg(err: uc_error) -> String {
 impl<T> UnicornResultExt<T> for StdResult<T, uc_error> {
     fn chain_err_msg(self, msg: &str) -> Result<T> {
         match self {
-            Err(err) => Err(failure::err_msg(unicorn_error_msg(err))).context(msg.to_owned())?,
+            Err(err) => Err(eyre!(unicorn_error_msg(err))).wrap_err(msg.to_owned())?,
             Ok(ok) => Ok(ok),
         }
     }

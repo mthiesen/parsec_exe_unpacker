@@ -1,7 +1,7 @@
 use parsec_exe_unpacker::{unpack_exe, Options};
 
 use clap::{Arg, Command};
-use common_failures::{prelude::*, quick_main};
+use eyre::Result;
 
 fn get_options() -> Options {
     let matches = Command::new(env!("CARGO_PKG_NAME"))
@@ -23,8 +23,6 @@ fn get_options() -> Options {
     }
 }
 
-fn run() -> Result<()> {
+fn main() -> Result<()> {
     unpack_exe(&get_options())
 }
-
-quick_main!(run);

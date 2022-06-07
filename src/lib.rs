@@ -6,8 +6,9 @@ mod unpacker;
 
 use crate::dos_exe::SegmentOffsetPtr;
 
-use common_failures::prelude::*;
-use failure::bail;
+use eyre::bail;
+use eyre::Result;
+use eyre::WrapErr;
 use std::{
     fs::OpenOptions,
     io::{BufWriter, Read},
@@ -27,14 +28,14 @@ struct UnpackedExe {
 fn unpack_exe_internal(mut reader: impl Read) -> Result<UnpackedExe> {
     println!("Parsing executable header ...");
     let header_info =
-        parsec_exe::parse_header(&mut reader).context("Failed to parse exe header.")?;
+        parsec_exe::parse_header(&mut reader).wrap_err("Failed to parse exe header.")?;
 
     println!("Reading executable data ...");
     let executable_data = {
         let mut data = vec![0u8; header_info.load_module_len];
         reader
             .read_exact(&mut data[..])
-            .context("Failed to read exe data.")?;
+            .wrap_err("Failed to read exe data.")?;
         data
     };
 
@@ -136,10 +137,10 @@ pub fn unpack_exe(options: &Options) -> Result<()> {
     let file = OpenOptions::new()
         .read(true)
         .open(&input_file)
-        .with_context(|_| format!("Failed to open '{}' for reading.", input_file.display()))?;
+        .wrap_err_with(|| format!("Failed to open '{}' for reading.", input_file.display()))?;
 
     let unpacked_exe = unpack_exe_internal(file)
-        .with_context(|_| format!("Failed to unpack '{}'", input_file.display()))?;
+        .wrap_err_with(|| format!("Failed to unpack '{}'", input_file.display()))?;
 
     println!("Writing '{}' ...", output_file.display());
 
@@ -149,7 +150,7 @@ pub fn unpack_exe(options: &Options) -> Result<()> {
             .truncate(true)
             .write(true)
             .open(&output_file)
-            .with_context(|_| format!("Failed to open '{}' for writing.", output_file.display()))?,
+            .wrap_err_with(|| format!("Failed to open '{}' for writing.", output_file.display()))?,
     );
 
     dos_exe::write_executable(
@@ -158,7 +159,7 @@ pub fn unpack_exe(options: &Options) -> Result<()> {
         &unpacked_exe.relocation_table,
         &unpacked_exe.executable_data,
     )
-    .context("Failed to write unpacked executable.")?;
+    .wrap_err("Failed to write unpacked executable.")?;
 
     Ok(())
 }

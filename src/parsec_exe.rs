@@ -1,9 +1,8 @@
-use crate::{
-    dos_exe::{Info, SegmentOffsetPtr, MZ_HEADER_SIGNATURE, PAGE_SIZE, PARAGRAPH_SIZE},
-    Result,
-};
+use crate::dos_exe::{Info, SegmentOffsetPtr, MZ_HEADER_SIGNATURE, PAGE_SIZE, PARAGRAPH_SIZE};
 use byteorder::{ByteOrder, LittleEndian};
-use failure::{bail, ResultExt};
+use eyre::bail;
+use eyre::Result;
+use eyre::WrapErr;
 use std::io::{ErrorKind, Read};
 
 // -------------------------------------------------------------------------------------------------
@@ -18,7 +17,7 @@ pub fn parse_header<R: Read>(mut reader: R) -> Result<Info> {
         let mut buffer = [0u8; SIZE];
         reader
             .read_exact(&mut buffer)
-            .context("Unable to read exe header.")?;
+            .wrap_err("Unable to read exe header.")?;
         buffer
     };
 

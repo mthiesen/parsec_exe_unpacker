@@ -1,6 +1,6 @@
 use parsec_exe_unpacker::{unpack_exe, Options};
 
-use common_failures::prelude::*;
+use eyre::Result;
 use sha2::{Digest, Sha256};
 use std::{
     fs,

@@ -15,4 +15,4 @@ unicorn-engine = "2.0.0"
 assert_matches = "1.5.0"
 tempfile = "3.3.0"
 sha2 = "0.10.5"
-digest = { version = "0.10.3", features = ["std"] }
+digest = { version = "0.10.5", features = ["std"] }

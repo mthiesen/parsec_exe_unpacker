@@ -18,8 +18,8 @@ fn get_options() -> Options {
         .get_matches();
 
     Options {
-        input_file: matches.value_of("INPUT_FILE").unwrap().into(),
-        output_file: matches.value_of("OUTPUT_FILE").map(|s| s.into()),
+        input_file: matches.get_one::<String>("INPUT_FILE").unwrap().into(),
+        output_file: matches.get_one::<String>("OUTPUT_FILE").map(|s| s.into()),
     }
 }
 

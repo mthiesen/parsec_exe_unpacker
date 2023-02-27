@@ -13,6 +13,6 @@ unicorn-engine = "2.0.1"
 
 [dev-dependencies]
 assert_matches = "1.5.0"
-tempfile = "3.3.0"
+tempfile = "3.4.0"
 sha2 = "0.10.6"
 digest = { version = "0.10.6", features = ["std"] }
